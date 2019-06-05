@@ -1,0 +1,85 @@
+$top-color = #fff;
+$top-bg-color = #0869AE;
+$top-size = 14px;
+$item-size = 12px;
+$top-item-hover-color = #FF9933;
+$popup-border-color = #e1e1e1;
+
+top-nav-item()
+    display: inline-block;
+    vertical-align: middle;
+    padding: 4px;
+    margin-top: 4px;
+    cursor: pointer;
+
+.top-nav
+    width: auto;
+    padding: 0 0.5em;
+    background-color: $top-bg-color;
+    color: $top-color;
+    height: 100%;
+    font-size: $top-size;
+    display:inline-block;
+
+    .top-nav-item-top, .top-nav-home
+        top-nav-item();
+
+        &:hover
+            background-color: $top-item-hover-color;
+            border-radius: 5px;
+
+    .top-nav-item-top-level-1, .top-nav-item-top-level-2
+        display: inline-block;
+
+    .top-nav-home, .top-nav-home-hide
+        display: none;
+
+    .top-nav-home-show
+        display: inline-block;
+
+    .top-nav-group
+        .top-nav-group-items
+            display: inline-block;
+
+        .top-nav-item-title, .top-nav-item-leaf
+            top-nav-item();
+            cursor: pointer;
+
+        .top-nav-item-leaf
+            font-size: 12px;
+            //cursor: pointer;
+
+            &:hover
+                text-decoration: underline;
+
+.top-nav-popup
+    display: none;
+    top: 38px;
+    background-color: #fff;
+    position: absolute;
+    z-index: 999;
+    width: 100%;
+    padding: 10px;
+    border: $popup-border-color 1px solid;
+
+    .top-nav-group-wrap
+        text-align: center;
+
+    .top-nav-group
+        display: inline-block;
+        vertical-align: top;
+        padding: 5px 20px;
+
+    .top-nav-item-title
+        border-bottom: $top-item-hover-color 1px solid;
+        padding: 10px 6px;
+        cursor: pointer;
+
+    .top-nav-group-items
+        margin-top: 10px;
+
+    .top-nav-item-leaf
+        font-weight: bolder;
+        padding: 5px 6px;
+        font-size: $item-size;
+        cursor: pointer;

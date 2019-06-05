@@ -1,0 +1,35 @@
+{
+  "name": "top-nav",
+  "version": "1.0.0",
+  "description": "顶部导航",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "stylus": "stylus -w src/top-nav.styl -o dist/top-nav.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huang-qing/top-nav.git"
+  },
+  "author": "huangqing",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/huang-qing/top-nav/issues"
+  },
+  "homepage": "https://github.com/huang-qing/top-nav#readme",
+  "dependencies": {
+    "@types/jquery": "^3.3.29",
+    "browserify": "^16.2.3",
+    "gulp": "^4.0.2",
+    "gulp-typescript": "^5.0.1",
+    "jquery": "^3.4.1",
+    "tsify": "^4.0.1",
+    "typescript": "^3.5.1",
+    "vinyl-source-stream": "^2.0.0"
+  },
+  "devDependencies": {
+    "fancy-log": "^1.3.3",
+    "gulp-stylus": "^2.7.0",
+    "watchify": "^3.11.1"
+  }
+}
