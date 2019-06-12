@@ -4,16 +4,75 @@ var TopNav = /** @class */ (function () {
         this.options = options;
         this.$popups = [];
         this.cache = {
-            path: null
+            path: null,
+            top: {
+                items: {
+                    width: 0
+                }
+            }
         };
+        this.items = [];
         this.$elem = $("#" + options.id);
         this.$home = $();
+        this.$popup = $();
+        this.style = $.extend(true, {
+            popup: {
+                space: 30
+            }
+        }, options.style);
     }
     TopNav.prototype.render = function () {
         this.$elem.addClass("top-nav");
         this.renderHome();
         this.renderTopItems(this.options.data);
+        this.resizeTopItemsSpace();
         this.bindEvent();
+    };
+    TopNav.prototype.goNavItem = function (key, value) {
+        var _this_1 = this;
+        var item = null;
+        this.items.forEach(function (i) {
+            if (i[key] === value) {
+                item = i;
+                _this_1.cache.path = item.path;
+                return false;
+            }
+        });
+        this.goItem(item, null);
+    };
+    TopNav.prototype.goItem = function (item, $elem) {
+        var _this = this, $clone;
+        if (item === null) {
+            return;
+        }
+        $elem = $elem || this.getElementByItem(item);
+        if ($elem.hasClass("top-nav-item-leaf") || $elem.hasClass("top-nav-item-title")) {
+            _this.$elem
+                .find(".top-nav-home")
+                .removeClass("top-nav-home-hide")
+                .addClass("top-nav-home-show");
+            $clone = $elem.closest(".top-nav-group").clone(true);
+            _this.$elem.find(".top-nav-item-top-level-1").hide();
+            _this.$elem
+                .find(".top-nav-item-top-level-2")
+                .empty()
+                .append($clone);
+        }
+        $elem.closest(".top-nav-popup").hide();
+    };
+    TopNav.prototype.resizeTopItemsSpace = function () {
+        var _this = this, itemsWidth, containerWidth, offsetWidth;
+        if (!this.options.autoResize) {
+            return;
+        }
+        containerWidth = _this.$elem.parent().width() || 0;
+        itemsWidth = _this.cache.top.items.width;
+        offsetWidth = Math.floor((containerWidth - itemsWidth) / _this.cache.top.items.count) || 0;
+        _this.$elem.find(".top-nav-item-top-level-1 .top-nav-item-top").each(function (i) {
+            if (i > 0) {
+                $(this).css("margin-left", offsetWidth);
+            }
+        });
     };
     TopNav.prototype.bindEvent = function () {
         var _this = this;
@@ -23,28 +82,31 @@ var TopNav = /** @class */ (function () {
             fn = item.click || _this.options.click;
             if (typeof fn === "function") {
                 fn.call(_this.$elem, item, _this.options.id, e);
-                if ($elem.hasClass("top-nav-item-leaf")) {
-                    _this.$elem
-                        .find(".top-nav-home")
-                        .removeClass("top-nav-home-hide")
-                        .addClass("top-nav-home-show");
-                    $clone = $elem.closest(".top-nav-group").clone(true);
-                    _this.$elem.find(".top-nav-item-top-level-1").hide();
-                    _this.$elem
-                        .find(".top-nav-item-top-level-2")
-                        .empty()
-                        .append($clone);
-                }
-                $elem.closest(".top-nav-popup").hide();
+                _this.goItem(item, $elem);
             }
         });
+        $(window).resize(function () {
+            _this.resizeTopItemsSpace();
+        });
         this.$elem.on("mouseenter", ".top-nav-item-top", function (e) {
-            var path, item, $elem = $(this);
+            var path, item, $elem = $(this), $popup, offset;
             $(".top-nav-popup").hide();
             path = _this.getPathByElement($elem);
             item = _this.getItemByElement($elem);
+            offset = $elem.offset();
             if (item.children && item.children.length > 0) {
-                _this.$popups[path[0]].show();
+                $popup = _this.$popups[path[0]];
+                if (item.children.length <= 4) {
+                    $popup.find(".top-nav-group-wrap").css({
+                        "text-align": "left",
+                        "margin-left": offset ? (Math.floor(offset.left) - _this.style.popup.space + "px") : 0
+                    });
+                    $popup.find(".top-nav-group").css({
+                        "padding-left": _this.style.popup.space + "px",
+                        "padding-right": _this.style.popup.space + "px"
+                    });
+                }
+                $popup.show();
             }
         });
         $(document).on("mouseleave", ".top-nav-popup", function (e) {
@@ -87,6 +149,9 @@ var TopNav = /** @class */ (function () {
         item = this.getItemByPath(path);
         return item;
     };
+    TopNav.prototype.getElementByItem = function (item) {
+        return $(".top-nav-popup").find("[data-path='" + item.path.join(",") + "']");
+    };
     TopNav.prototype.getPath = function (path, index) {
         var _path;
         _path = path.map(function (i) {
@@ -116,6 +181,8 @@ var TopNav = /** @class */ (function () {
     };
     TopNav.prototype.renderItem = function (item, path, type) {
         if (type === void 0) { type = "leaf"; }
+        item.path = path;
+        this.items.push(item);
         return "\n    <div class=\"top-nav-item-" + type + "\" data-path=\"" + path.toString() + "\">\n        " + item.text + "\n    </div>";
     };
     TopNav.prototype.renderTopItem = function (item, index) {
@@ -138,6 +205,7 @@ var TopNav = /** @class */ (function () {
         });
         $top = $("\n    <div class=\"top-nav-item-top-level-1\">\n      " + tops.join("") + "\n    </div>\n    <div class=\"top-nav-item-top-level-2\">\n    </div>\n    ");
         this.$elem.append($top);
+        this.cache.top.items.width = $top.width();
     };
     TopNav.prototype.renderPopup = function (items, path) {
         var _this_1 = this;
@@ -146,6 +214,7 @@ var TopNav = /** @class */ (function () {
             _this_1.mapItem(item);
             groups.push(_this_1.renderGroup(item, path, i));
         });
+        this.cache.top.items.count = items.length;
         return "\n    <div class=\"top-nav-popup\">\n      <div class=\"top-nav-group-wrap\">\n        " + groups.join("") + "\n      </div>\n    </div>\n    ";
     };
     TopNav.prototype.renderGroupTitle = function (item, path) {

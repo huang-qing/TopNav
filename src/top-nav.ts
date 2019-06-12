@@ -4,6 +4,8 @@ interface Item {
   children: Array<Item>;
   click: Function;
   tag: any;
+  path: Number[]
+  [index: string]: any;
 }
 
 interface Options {
@@ -12,26 +14,96 @@ interface Options {
   map: any;
   click: Function;
   home: Item;
+  style: any;
+  autoResize: false
 }
 
 class TopNav {
   $popups: Array<JQuery> = [];
   $elem: JQuery;
+  $popup: JQuery;
   $home: JQuery;
   cache: any = {
-    path: null
+    path: null,
+    top: {
+      items: {
+        width: 0
+      }
+    }
   };
+  items: Item[] = [];
+  style: any;
 
   constructor(public options: Options) {
     this.$elem = $("#" + options.id);
     this.$home = $();
+    this.$popup = $();
+    this.style = $.extend(true, {
+      popup: {
+        space: 30
+      }
+    }, options.style);
   }
 
   render() {
     this.$elem.addClass("top-nav");
     this.renderHome();
     this.renderTopItems(this.options.data);
+    this.resizeTopItemsSpace();
     this.bindEvent();
+  }
+
+  goNavItem(key: string, value: any) {
+    var item: Item | null = null;
+    this.items.forEach(i => {
+      if (i[key] === value) {
+        item = i;
+        this.cache.path = item.path;
+        return false;
+      }
+    });
+
+    this.goItem(item, null);
+  }
+
+  goItem(item: Item | null, $elem: JQuery | null) {
+    var _this = this, $clone;
+    if (item === null) {
+      return;
+    }
+    $elem = $elem || this.getElementByItem(item);
+    if ($elem.hasClass("top-nav-item-leaf") || $elem.hasClass("top-nav-item-title")) {
+      _this.$elem
+        .find(".top-nav-home")
+        .removeClass("top-nav-home-hide")
+        .addClass("top-nav-home-show");
+
+      $clone = $elem.closest(".top-nav-group").clone(true);
+      _this.$elem.find(".top-nav-item-top-level-1").hide();
+      _this.$elem
+        .find(".top-nav-item-top-level-2")
+        .empty()
+        .append($clone);
+    }
+    $elem.closest(".top-nav-popup").hide();
+  }
+
+  resizeTopItemsSpace() {
+    var _this = this,
+      itemsWidth: number,
+      containerWidth: number,
+      offsetWidth: number;
+    if (!this.options.autoResize) {
+      return;
+    }
+    containerWidth = _this.$elem.parent().width() || 0;
+    itemsWidth = _this.cache.top.items.width;
+    offsetWidth = Math.floor((containerWidth - itemsWidth) / _this.cache.top.items.count) || 0;
+    _this.$elem.find(".top-nav-item-top-level-1 .top-nav-item-top").each(function (i) {
+      if (i > 0) {
+        $(this).css("margin-left", offsetWidth);
+      }
+    });
   }
 
   bindEvent() {
@@ -39,7 +111,7 @@ class TopNav {
     $(document).on(
       "click",
       ".top-nav-item-leaf,.top-nav-item-top,.top-nav-item-title",
-      function(e) {
+      function (e) {
         var $elem = $(this),
           item,
           $clone,
@@ -49,43 +121,49 @@ class TopNav {
         fn = item.click || _this.options.click;
         if (typeof fn === "function") {
           fn.call(_this.$elem, item, _this.options.id, e);
-          if ($elem.hasClass("top-nav-item-leaf")) {
-            _this.$elem
-              .find(".top-nav-home")
-              .removeClass("top-nav-home-hide")
-              .addClass("top-nav-home-show");
-            $clone = $elem.closest(".top-nav-group").clone(true);
-            _this.$elem.find(".top-nav-item-top-level-1").hide();
-            _this.$elem
-              .find(".top-nav-item-top-level-2")
-              .empty()
-              .append($clone);
-          }
-
-          $elem.closest(".top-nav-popup").hide();
+          _this.goItem(item, $elem);
         }
       }
     );
+    
+    $(window).resize(function () {
+      
+      _this.resizeTopItemsSpace();
+    });
 
-    this.$elem.on("mouseenter", ".top-nav-item-top", function(e) {
+    this.$elem.on("mouseenter", ".top-nav-item-top", function (e) {
       var path,
         item,
-        $elem = $(this);
+        $elem = $(this),
+        $popup,
+        offset;
 
       $(".top-nav-popup").hide();
       path = _this.getPathByElement($elem);
       item = _this.getItemByElement($elem);
-
+      offset = $elem.offset();
+      
       if (item.children && item.children.length > 0) {
-        _this.$popups[path[0]].show();
+        $popup = _this.$popups[path[0]];
+        if (item.children.length <= 4) {
+          $popup.find(".top-nav-group-wrap").css({
+            "text-align": "left",
+            "margin-left": offset ? (Math.floor(offset.left) - _this.style.popup.space + "px") : 0
+          });
+          $popup.find(".top-nav-group").css({
+            "padding-left": _this.style.popup.space + "px",
+            "padding-right": _this.style.popup.space + "px"
+          });
+        }
+        $popup.show();
       }
     });
 
-    $(document).on("mouseleave", ".top-nav-popup", function(e) {
+    $(document).on("mouseleave", ".top-nav-popup", function (e) {
       $(this).hide();
     });
 
-    this.$home.on("click", function(e) {
+    this.$home.on("click", function (e) {
       var $elem = $(this),
         fn,
         item = _this.options.home;
@@ -100,7 +178,7 @@ class TopNav {
       }
     });
 
-    this.$home.on("mouseenter", function() {
+    this.$home.on("mouseenter", function () {
       $(".top-nav-popup").hide();
       _this.$popups[_this.cache.path[0]].show();
     });
@@ -133,6 +211,10 @@ class TopNav {
     item = this.getItemByPath(path);
 
     return item;
+  }
+
+  getElementByItem(item: Item): JQuery {
+    return $(".top-nav-popup").find("[data-path='" + item.path.join(",") + "']");
   }
 
   getPath(path: Array<Number>, index: Number) {
@@ -169,6 +251,8 @@ class TopNav {
   }
 
   renderItem(item: Item, path: Array<Number>, type: string = "leaf") {
+    item.path = path;
+    this.items.push(item);
     return `
     <div class="top-nav-item-${type}" data-path="${path.toString()}">
         ${item.text}
@@ -206,6 +290,7 @@ class TopNav {
     </div>
     `);
     this.$elem.append($top);
+    this.cache.top.items.width = $top.width();
   }
 
   renderPopup(items: Item[], path: Array<Number>) {
@@ -215,6 +300,8 @@ class TopNav {
       this.mapItem(item);
       groups.push(this.renderGroup(item, path, i));
     });
+
+    this.cache.top.items.count = items.length;
 
     return `
     <div class="top-nav-popup">
@@ -252,4 +339,5 @@ class TopNav {
     </div>
     `;
   }
+
 }
