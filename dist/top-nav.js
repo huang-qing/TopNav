@@ -15,6 +15,7 @@ var TopNav = /** @class */ (function () {
         this.$elem = $("#" + options.id);
         this.$home = $();
         this.$popup = $();
+        this.$back = $();
         this.style = $.extend(true, {
             popup: {
                 space: 30
@@ -25,6 +26,7 @@ var TopNav = /** @class */ (function () {
         this.$elem.addClass("top-nav");
         this.renderHome();
         this.renderTopItems(this.options.data);
+        this.renderBack();
         this.resizeTopItemsSpace();
         this.bindEvent();
     };
@@ -41,17 +43,21 @@ var TopNav = /** @class */ (function () {
         this.goItem(item, null);
     };
     TopNav.prototype.goItem = function (item, $elem) {
-        var _this = this, $clone;
+        var _this = this, $clone, $items;
         if (item === null) {
             return;
         }
         $elem = $elem || this.getElementByItem(item);
         if ($elem.hasClass("top-nav-item-leaf") || $elem.hasClass("top-nav-item-title")) {
-            _this.$elem
-                .find(".top-nav-home")
-                .removeClass("top-nav-home-hide")
+            _this.$home.removeClass("top-nav-home-hide")
                 .addClass("top-nav-home-show");
+            _this.$back.removeClass("top-nav-back-hide")
+                .addClass("top-nav-back-show");
             $clone = $elem.closest(".top-nav-group").clone(true);
+            $clone.css({ padding: 0 });
+            $items = $clone.find(".top-nav-item-leaf");
+            $items.removeClass("top-nav-item-select");
+            $items.eq(item.path[item.path.length - 1]).addClass("top-nav-item-select");
             _this.$elem.find(".top-nav-item-top-level-1").hide();
             _this.$elem
                 .find(".top-nav-item-top-level-2")
@@ -74,9 +80,22 @@ var TopNav = /** @class */ (function () {
             }
         });
     };
+    TopNav.prototype.goHome = function () {
+        var fn, item = this.options.home;
+        this.$home.removeClass("top-nav-home-show").addClass("top-nav-home-hide");
+        this.$back.removeClass("top-nav-back-show").addClass("top-nav-back-hide");
+        this.$elem.find(".top-nav-item-top-level-1").show();
+        this.$elem.find(".top-nav-item-top-level-2").empty();
+        fn = item.click || this.options.click;
+        if (typeof fn === "function") {
+            fn.call(this.$elem, item, this.options.id);
+        }
+    };
     TopNav.prototype.bindEvent = function () {
         var _this = this;
-        $(document).on("click", ".top-nav-item-leaf,.top-nav-item-top,.top-nav-item-title", function (e) {
+        $(document).on("click", 
+        //".top-nav-item-leaf,.top-nav-item-top,.top-nav-item-title",
+        ".top-nav-item-leaf", function (e) {
             var $elem = $(this), item, $clone, fn;
             item = _this.getItemByElement($elem);
             fn = item.click || _this.options.click;
@@ -113,13 +132,16 @@ var TopNav = /** @class */ (function () {
             $(this).hide();
         });
         this.$home.on("click", function (e) {
-            var $elem = $(this), fn, item = _this.options.home;
-            $elem.removeClass("top-nav-home-show").addClass("top-nav-home-hide");
-            _this.$elem.find(".top-nav-item-top-level-1").show();
-            _this.$elem.find(".top-nav-item-top-level-2").empty();
+            _this.goHome();
+        });
+        this.$back.on("click", function (e) {
+            var $elem = $(this), fn, item = _this.options.back, checked;
             fn = item.click || _this.options.click;
             if (typeof fn === "function") {
-                fn.call(_this.$elem, item, _this.options.id, e);
+                var checked = fn.call(_this.$elem, item, _this.options.id, e);
+                if (checked) {
+                    _this.goHome();
+                }
             }
         });
         this.$home.on("mouseenter", function () {
@@ -131,8 +153,15 @@ var TopNav = /** @class */ (function () {
         var item;
         this.mapItem(this.options.home);
         item = this.options.home;
-        this.$home = $("<div class=\"top-nav-home\">" + item.text + "</div>");
+        this.$home = $("<div class=\"top-nav-home\">" + (item.text || "首页") + "</div>");
         this.$home.appendTo(this.$elem);
+    };
+    TopNav.prototype.renderBack = function () {
+        var item;
+        this.mapItem(this.options.back);
+        item = this.options.back;
+        this.$back = $("<div class=\"top-nav-back\">" + (item.text || "返回") + "</div>");
+        this.$back.appendTo(this.$elem);
     };
     TopNav.prototype.getPathByElement = function ($item) {
         var path;

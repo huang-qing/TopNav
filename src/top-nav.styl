@@ -10,7 +10,7 @@ top-nav-item()
     vertical-align: middle;
     padding: 4px;
     margin-top: 4px;
-    cursor: pointer;
+    cursor: default;
 
 .top-nav
     width: auto;
@@ -22,7 +22,10 @@ top-nav-item()
     font-size: $top-size;
     display:inline-block;
 
-    .top-nav-item-top, .top-nav-home
+    .top-nav-item-select
+        color:$top-item-hover-color;
+
+    .top-nav-item-top, .top-nav-home,.top-nav-back
         top-nav-item();
 
         &:hover
@@ -32,10 +35,10 @@ top-nav-item()
     .top-nav-item-top-level-1, .top-nav-item-top-level-2
         display: inline-block;
 
-    .top-nav-home, .top-nav-home-hide
+    .top-nav-home, .top-nav-home-hide,.top-nav-back, .top-nav-back-hide
         display: none;
 
-    .top-nav-home-show
+    .top-nav-home-show,.top-nav-back-show
         display: inline-block;
 
     .top-nav-group
@@ -44,11 +47,11 @@ top-nav-item()
 
         .top-nav-item-title, .top-nav-item-leaf
             top-nav-item();
-            cursor: pointer;
+            //cursor: pointer;
 
         .top-nav-item-leaf
             font-size: 12px;
-            //cursor: pointer;
+            cursor: pointer;
 
             &:hover
                 text-decoration: underline;
@@ -74,7 +77,7 @@ top-nav-item()
     .top-nav-item-title
         border-bottom: $top-item-hover-color 1px solid;
         padding: 10px 6px;
-        cursor: pointer;
+        cursor: default;
 
     .top-nav-group-items
         margin-top: 10px;

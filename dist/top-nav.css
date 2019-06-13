@@ -7,16 +7,21 @@
   font-size: 14px;
   display: inline-block;
 }
+.top-nav .top-nav-item-select {
+  color: #f93;
+}
 .top-nav .top-nav-item-top,
-.top-nav .top-nav-home {
+.top-nav .top-nav-home,
+.top-nav .top-nav-back {
   display: inline-block;
   vertical-align: middle;
   padding: 4px;
   margin-top: 4px;
-  cursor: pointer;
+  cursor: default;
 }
 .top-nav .top-nav-item-top:hover,
-.top-nav .top-nav-home:hover {
+.top-nav .top-nav-home:hover,
+.top-nav .top-nav-back:hover {
   background-color: #f93;
   border-radius: 5px;
 }
@@ -25,10 +30,13 @@
   display: inline-block;
 }
 .top-nav .top-nav-home,
-.top-nav .top-nav-home-hide {
+.top-nav .top-nav-home-hide,
+.top-nav .top-nav-back,
+.top-nav .top-nav-back-hide {
   display: none;
 }
-.top-nav .top-nav-home-show {
+.top-nav .top-nav-home-show,
+.top-nav .top-nav-back-show {
   display: inline-block;
 }
 .top-nav .top-nav-group .top-nav-group-items {
@@ -40,11 +48,11 @@
   vertical-align: middle;
   padding: 4px;
   margin-top: 4px;
-  cursor: pointer;
-  cursor: pointer;
+  cursor: default;
 }
 .top-nav .top-nav-group .top-nav-item-leaf {
   font-size: 12px;
+  cursor: pointer;
 }
 .top-nav .top-nav-group .top-nav-item-leaf:hover {
   text-decoration: underline;
@@ -70,7 +78,7 @@
 .top-nav-popup .top-nav-item-title {
   border-bottom: #f93 1px solid;
   padding: 10px 6px;
-  cursor: pointer;
+  cursor: default;
 }
 .top-nav-popup .top-nav-group-items {
   margin-top: 10px;

@@ -32,3 +32,5 @@ gulp.task('watch-styl', function () {
 });
 
 gulp.task("default", gulp.parallel(["watch-ts", "watch-styl"]));
+
+gulp.task("dist", gulp.parallel(["ts", "styl"]));

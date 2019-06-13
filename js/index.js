@@ -119,6 +119,13 @@ $(function () {
         },
         home: {
             Text: "首页"
+        },
+        back: {
+            Text: "返回",
+            click:function(){
+                console.log("click back-button");
+                return true;
+            }
         }
     });
     topNav.render();
